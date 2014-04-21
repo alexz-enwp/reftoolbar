@@ -20,11 +20,11 @@ header('Content-type: text/javascript');
 class PMIDLookup {
 
 	private $id;
-	
+
 	public function __construct( $id ) {
 		$this->id = $id;
 	}
-	
+
 	public function getResult() {
 		$url = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?';
 		$url .= "&db=pubmed";
@@ -32,9 +32,9 @@ class PMIDLookup {
 		$url .= '&email=mrzmanwiki@gmail.com';
 		$url .= "&id={$this->id}";
 		$url .= '&retmode=xml';
-		
-		$ch = curl_init($url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$xml = curl_exec($ch);
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
@@ -68,7 +68,7 @@ class PMIDLookup {
 							$result['authors'][] = array( (string)$a, '' );
 						}
 					}
-					break;			
+					break;
 			}
 		}
 		return $result;
@@ -78,15 +78,15 @@ class PMIDLookup {
 class ISBNLookup {
 
 	private $id;
-	
+
 	public function __construct( $id ) {
 		$this->id = $id;
 	}
-	
+
 	public function getResult() {
 		$url = "http://xisbn.worldcat.org/webservices/xid/isbn/{$this->id}?method=getMetadata&format=json&fl=year,ed,title,author,publisher,city";
-		$ch = curl_init($url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$json = curl_exec($ch);
 		curl_close($ch);
 		$data = json_decode($json, true);
@@ -120,24 +120,24 @@ class ISBNLookup {
 				}
 			}
 		}
-		return $result;		
+		return $result;
 	}
-	
+
 }
 
 class DOILookup {
 
 	private $id;
-	
+
 	public function __construct( $id ) {
 		$this->id = $id;
 	}
-	
+
 	public function getResult() {
 		require_once('crossref.php'); // username for crossref openurl system
 		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&pid=$crPID&format=unixref";
-		$ch = curl_init($url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$xml = curl_exec($ch);
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
@@ -174,10 +174,10 @@ class DOILookup {
 
 			foreach($res->journal_article->contributors->person_name as $a) {
 				$result['authors'][] = array((string)$a->surname, (string)$a->given_name);
-			}		
+			}
 		}
 		return $result;
-	}	
+	}
 }
 
 $k = array_keys($_GET);
