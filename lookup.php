@@ -33,6 +33,9 @@ class PMIDLookup {
 		$url .= "&id={$this->id}";
 		$url .= '&retmode=xml';
 
+		$months = array('Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
+				'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
+				'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$xml = curl_exec($ch);
@@ -42,7 +45,24 @@ class PMIDLookup {
 		foreach($data->DocSum->Item as $i) {
 			switch ($i['Name']) {
 				case 'PubDate':
-					$result['date'] = (string)$i;
+					$result['fulldate'] = true;
+					$date = explode (" ", (string)$i);
+					if (!isset($date[2])) {
+						$result['fulldate'] = false;
+						$result['year'] = $date[0];
+						if (isset($date[1])) {
+                                                	$result['month'] = $months[$date[1]];
+                                        	} else {
+							$result['month'] = false;
+						}
+					}
+					$result['date'] = $date[0];
+					if (isset($date[1])) {
+						$result['date'].='-'.$months[$date[1]];
+						if (isset($date[2])) {
+							$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
+						}
+					}
 					break;
 				case 'FullJournalName':
 					$result['journal'] = (string)$i;
@@ -196,6 +216,16 @@ switch($k[0]) {
 }
 $idval = trim($_GET[$k[0]]);
 $look = new $class($idval);
+$log = file_get_contents( '/data/project/reftoolbar/log.txt' );
+$log = json_decode($log, true);
+$logdate = date('Y-m-d');
+if (isset($log[$k[0]][$logdate])) {
+	$log[$k[0]][$logdate]++;
+} else {
+	$log[$k[0]][$logdate] = 1;
+}
+$log = json_encode($log);
+file_put_contents('/data/project/reftoolbar/log.txt', $log);
 $res = $look->getResult();
 $tem = $_GET['template'];
 echo 'CiteTB.autoFill('.json_encode($res).", '$tem', '{$k[0]}')";
