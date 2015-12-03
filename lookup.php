@@ -155,7 +155,7 @@ class DOILookup {
 
 	public function getResult() {
 		require_once('crossref.php'); // username for crossref openurl system
-		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&format=unixref";
+		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&pid=$crPID&format=unixref";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$xml = curl_exec($ch);
