@@ -155,7 +155,7 @@ class DOILookup {
 
 	public function getResult() {
 		require_once('crossref.php'); // username for crossref openurl system
-		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&pid=$crPID&format=unixref";
+		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&format=unixref";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$xml = curl_exec($ch);
@@ -201,31 +201,36 @@ class DOILookup {
 }
 
 $k = array_keys($_GET);
+if (!isset( $k[0])) {
+	die(1);
+}
 switch($k[0]) {
 	case 'pmid':
-		$class = PMIDLookup;
+		$class = 'PMIDLookup';
 		break;
 	case 'isbn':
-		$class = ISBNLookup;
+		$class = 'ISBNLookup';
 		break;
 	case 'doi':
-		$class = DOILookup;
+		$class = 'DOILookup';
 		break;
 	default:
 		die(1);
 }
 $idval = trim($_GET[$k[0]]);
 $look = new $class($idval);
-$log = file_get_contents( '/data/project/reftoolbar/log.txt' );
-$log = json_decode($log, true);
-$logdate = date('Y-m-d');
-if (isset($log[$k[0]][$logdate])) {
-	$log[$k[0]][$logdate]++;
-} else {
-	$log[$k[0]][$logdate] = 1;
+if (file_exists( '/data/project/reftoolbar/log.txt')) {
+	$log = file_get_contents( '/data/project/reftoolbar/log.txt' );
+	$log = json_decode($log, true);
+	$logdate = date('Y-m-d');
+	if (isset($log[$k[0]][$logdate])) {
+		$log[$k[0]][$logdate]++;
+	} else {
+		$log[$k[0]][$logdate] = 1;
+	}
+	$log = json_encode($log);
+	file_put_contents('/data/project/reftoolbar/log.txt', $log);
 }
-$log = json_encode($log);
-file_put_contents('/data/project/reftoolbar/log.txt', $log);
 $res = $look->getResult();
 $tem = $_GET['template'];
 echo 'CiteTB.autoFill('.json_encode($res).", '$tem', '{$k[0]}')";
