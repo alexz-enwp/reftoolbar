@@ -16,6 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+/*
+	This is an API for retrieving bibliographic data using a PMID, ISBN, DOI, or URL.
+	Example usage: lookup.php?isbn=9781848449510&template=book
+*/
+
 header('Content-type: text/javascript');
 class PMIDLookup {
 
@@ -200,6 +206,66 @@ class DOILookup {
 	}
 }
 
+class URLLookup {
+
+	private $id;
+
+	public function __construct( $id ) {
+		$this->id = $id;
+	}
+
+	public function getResult() {
+		$url = "http://citoid.wikimedia.org/api?basefields=true&format=mediawiki&search={$this->id}";
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$json = curl_exec($ch);
+		curl_close($ch);
+		$data = json_decode($json, true);
+		$result = array();
+		if ( $data ) {
+			if ( $data[0]['itemType'] === 'book' ) {
+				$result['title'] = $data[0]['title'];
+			} else {
+				$result['title'] = $data[0]['publicationTitle'];
+			}
+			if ( $data[0]['itemType'] === 'bookSection' ) {
+				$result['chapter'] = $data[0]['title'];
+			}
+			$result['publisher'] = $data[0]['publisher'];
+			// TODO: Finish this!
+			/*
+			$result['location'] = $data['list'][0]['city'];
+			$result['year'] = $data['list'][0]['year'];
+			$result['edition'] = $data['list'][0]['ed'];
+			$authors = $data['list'][0]['author'];
+			$authors = rtrim($authors, '.');
+			if (strpos($authors, 'by ') === 0) {
+				$authors = substr($authors, 3);
+			}
+			$result['authors'] = array();
+			$a = explode(' and ', $authors);
+			$alist = array();
+			if (count($a) == 2) {
+				$alist = explode(', ', $a[0]);
+				$alist[] = $a[1];
+			} else {
+				$alist[] = $authors;
+			}
+			foreach($alist as $a) {
+				$r = preg_match('/^(.*?) (\S*)$/', $a, $match);
+				if ($r) {
+					$result['authors'][] = array( $match[2], $match[1] );
+				} else {
+					$result['authors'][] = array( $a, '');
+				}
+			}
+			*/
+		}
+		return $result;
+	}
+
+}
+
 $k = array_keys($_GET);
 if (!isset( $k[0])) {
 	die(1);
@@ -214,6 +280,9 @@ switch($k[0]) {
 	case 'doi':
 		$class = 'DOILookup';
 		break;
+	//case 'url':
+		//$class = 'URLLookup';
+		//break;
 	default:
 		die(1);
 }
