@@ -57,8 +57,8 @@ class PMIDLookup {
 						$result['fulldate'] = false;
 						$result['year'] = $date[0];
 						if (isset($date[1])) {
-                                                	$result['month'] = $months[$date[1]];
-                                        	} else {
+							$result['month'] = $months[$date[1]];
+						} else {
 							$result['month'] = false;
 						}
 					}
@@ -215,6 +215,7 @@ class URLLookup {
 	}
 
 	public function getResult() {
+		// See https://www.mediawiki.org/wiki/Citoid/API
 		$url = "http://citoid.wikimedia.org/api?basefields=true&format=mediawiki&search={$this->id}";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -223,43 +224,76 @@ class URLLookup {
 		$data = json_decode($json, true);
 		$result = array();
 		if ( $data ) {
-			if ( $data[0]['itemType'] === 'book' ) {
-				$result['title'] = $data[0]['title'];
-			} else {
-				$result['title'] = $data[0]['publicationTitle'];
-			}
-			if ( $data[0]['itemType'] === 'bookSection' ) {
-				$result['chapter'] = $data[0]['title'];
-			}
-			$result['publisher'] = $data[0]['publisher'];
-			// TODO: Finish this!
-			/*
-			$result['location'] = $data['list'][0]['city'];
-			$result['year'] = $data['list'][0]['year'];
-			$result['edition'] = $data['list'][0]['ed'];
-			$authors = $data['list'][0]['author'];
-			$authors = rtrim($authors, '.');
-			if (strpos($authors, 'by ') === 0) {
-				$authors = substr($authors, 3);
-			}
-			$result['authors'] = array();
-			$a = explode(' and ', $authors);
-			$alist = array();
-			if (count($a) == 2) {
-				$alist = explode(', ', $a[0]);
-				$alist[] = $a[1];
-			} else {
-				$alist[] = $authors;
-			}
-			foreach($alist as $a) {
-				$r = preg_match('/^(.*?) (\S*)$/', $a, $match);
-				if ($r) {
-					$result['authors'][] = array( $match[2], $match[1] );
-				} else {
-					$result['authors'][] = array( $a, '');
+			$itemType = $data[0]['itemType'];
+			foreach ( $data[0] as $key => $value ) {
+				switch ( $key ) {
+					case 'publicationTitle':
+						switch ( $itemType ) {
+							case 'journalArticle':
+							case 'magazineArticle':
+								$result['journal'] = $value;
+								break;
+							case 'bookSection':
+								if ( $_GET['template'] === 'book' ) {
+									$result['title'] = $value;
+								} else {
+									$result['work'] = $value;
+								}
+								break;
+							case 'newspaperArticle':
+							case 'newspaperArticle':
+							case 'encyclopediaArticle':
+								$result['work'] = $value;
+						}
+					case 'websiteTitle':
+						$result['website'] = $value;
+						break;
+					case 'title':
+						if ( $itemType === 'bookSection' ) {
+							$result['chapter'] = $value;
+						} else {
+							$result['title'] = $value;
+						}
+						break;
+					case 'volume':
+						$result['volume'] = $value;
+						break;
+					case 'issue':
+						$result['issue'] = $value;
+						break;
+					case 'edition':
+						// Citoid API returns 'X edition', but templates expect just 'X'
+						$result['edition'] = str_replace(' edition','',$value);
+						break;
+					case 'publisher':
+						$result['publisher'] = $value;
+						break;
+					case 'pages':
+						$result['pages'] = $value;
+						break;
+					case 'ISBN':
+						$result['isbn'] = $value[0];
+						break;
+					case 'ISSN':
+						$result['issn'] = $value;
+						break;
+					case 'date':
+						$result['date'] = $value;
+						break;
+					case 'DOI':
+						$result['doi'] = $value;
+						break;
+					case 'language':
+						$result['language'] = $value;
+						break;
+					case 'author':
+						foreach( $value as $author ) {
+							if ( $author[0] && $author[1] ) {
+								$result['authors'][] = $author;
+							}
+						}
 				}
 			}
-			*/
 		}
 		return $result;
 	}
@@ -280,9 +314,9 @@ switch($k[0]) {
 	case 'doi':
 		$class = 'DOILookup';
 		break;
-	//case 'url':
-		//$class = 'URLLookup';
-		//break;
+	case 'url':
+		$class = 'URLLookup';
+		break;
 	default:
 		die(1);
 }
