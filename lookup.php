@@ -228,29 +228,21 @@ class URLLookup {
 			foreach ( $data[0] as $key => $value ) {
 				switch ( $key ) {
 					case 'publicationTitle':
-						switch ( $itemType ) {
-							case 'bookSection':
-								if ( $_GET['template'] === 'book' ) {
-									$result['title'] = $value;
-								} else {
-									$result['journal'] = $value;
-								}
-								break;
-							case 'journalArticle':
-							case 'magazineArticle':
-							case 'newspaperArticle':
-							case 'encyclopediaArticle':
-								$result['journal'] = $value;
+						if ( $itemType === 'bookSection' && $_GET['template'] === 'book' ) {
+							$result['title'] = $value;
+						} else {
+							$result['journal'] = $value;
 						}
-					case 'websiteTitle':
-						$result['journal'] = $value;
-						break;
 					case 'title':
-						if ( $itemType === 'bookSection' ) {
+						if ( $itemType === 'bookSection' && $_GET['template'] === 'book' ) {
 							$result['chapter'] = $value;
 						} else {
 							$result['title'] = $value;
 						}
+						break;
+					case 'websiteTitle':
+						// RefToolbar maps all work titles to journal
+						$result['journal'] = $value;
 						break;
 					case 'volume':
 						$result['volume'] = $value;
