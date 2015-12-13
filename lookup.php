@@ -229,21 +229,18 @@ class URLLookup {
 				switch ( $key ) {
 					case 'publicationTitle':
 						switch ( $itemType ) {
-							case 'journalArticle':
-							case 'magazineArticle':
-								$result['journal'] = $value;
-								break;
 							case 'bookSection':
 								if ( $_GET['template'] === 'book' ) {
 									$result['title'] = $value;
 								} else {
-									$result['work'] = $value;
+									$result['journal'] = $value;
 								}
 								break;
-							case 'newspaperArticle':
+							case 'journalArticle':
+							case 'magazineArticle':
 							case 'newspaperArticle':
 							case 'encyclopediaArticle':
-								$result['work'] = $value;
+								$result['journal'] = $value;
 						}
 					case 'websiteTitle':
 						$result['website'] = $value;
