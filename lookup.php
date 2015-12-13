@@ -243,7 +243,7 @@ class URLLookup {
 								$result['journal'] = $value;
 						}
 					case 'websiteTitle':
-						$result['website'] = $value;
+						$result['journal'] = $value;
 						break;
 					case 'title':
 						if ( $itemType === 'bookSection' ) {
