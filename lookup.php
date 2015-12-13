@@ -272,7 +272,7 @@ class URLLookup {
 						$result['isbn'] = $value[0];
 						break;
 					case 'ISSN':
-						$result['issn'] = $value;
+						$result['issn'] = $value[0];
 						break;
 					case 'date':
 						$result['date'] = $value;
