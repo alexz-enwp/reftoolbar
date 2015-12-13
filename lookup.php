@@ -233,6 +233,7 @@ class URLLookup {
 						} else {
 							$result['journal'] = $value;
 						}
+						break;
 					case 'title':
 						if ( $itemType === 'bookSection' && $_GET['template'] === 'book' ) {
 							$result['chapter'] = $value;
