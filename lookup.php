@@ -279,7 +279,8 @@ class URLLookup {
 					case 'author':
 						foreach( $value as $author ) {
 							if ( $author[0] && $author[1] ) {
-								$result['authors'][] = $author;
+								// RefToolbar gadget expects lastName, firstName
+								$result['authors'][] = array($author[1], $author[0]);
 							}
 						}
 				}
