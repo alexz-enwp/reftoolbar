@@ -216,7 +216,7 @@ class URLLookup {
 
 	public function getResult() {
 		// See https://www.mediawiki.org/wiki/Citoid/API
-		$url = "http://citoid.wikimedia.org/api?basefields=true&format=mediawiki&search={$this->id}";
+		$url = "https://citoid.wikimedia.org/api?basefields=true&format=mediawiki&search={$this->id}";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$json = curl_exec($ch);
