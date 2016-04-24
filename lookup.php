@@ -226,6 +226,10 @@ class URLLookup {
 		if ( $data ) {
 			$itemType = $data[0]['itemType'];
 			foreach ( $data[0] as $key => $value ) {
+				// Replace any pipe characters since these will break the templates
+				if ( is_string( $value ) ) {
+					$value = str_replace( '|', '{{!}}', $value );
+				}
 				switch ( $key ) {
 					case 'publicationTitle':
 						if ( $itemType === 'bookSection' && $_GET['template'] === 'book' ) {
