@@ -44,6 +44,7 @@ class PMIDLookup {
 				'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		$xml = curl_exec($ch);
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
@@ -113,6 +114,7 @@ class ISBNLookup {
 		$url = "http://xisbn.worldcat.org/webservices/xid/isbn/{$this->id}?method=getMetadata&format=json&fl=year,ed,title,author,publisher,city";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		$json = curl_exec($ch);
 		curl_close($ch);
 		$data = json_decode($json, true);
@@ -164,6 +166,7 @@ class DOILookup {
 		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&pid=$crPID&format=unixref";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		$xml = curl_exec($ch);
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
@@ -219,6 +222,7 @@ class URLLookup {
 		$url = "https://citoid.wikimedia.org/api?basefields=true&format=mediawiki&search={$this->id}";
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		$json = curl_exec($ch);
 		curl_close($ch);
 		$data = json_decode($json, true);
