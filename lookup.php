@@ -219,7 +219,7 @@ class URLLookup {
 
 	public function getResult() {
 		// See https://www.mediawiki.org/wiki/Citoid
-		$url = "https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki-basefields/{$this->id}";
+		$url = "https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki-basefields/" . urlencode( $this->id );
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -227,7 +227,7 @@ class URLLookup {
 		curl_close($ch);
 		$data = json_decode($json, true);
 		$result = array();
-		if ( $data ) {
+		if ( $data && isset( $data[0] ) ) {
 			$itemType = $data[0]['itemType'];
 			foreach ( $data[0] as $key => $value ) {
 				// Replace any pipe characters since these will break the templates
