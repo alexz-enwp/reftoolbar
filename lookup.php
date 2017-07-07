@@ -158,6 +158,8 @@ class DOILookup {
 	private $id;
 
 	public function __construct( $id ) {
+		// Strip URL prefix if given
+		$id = preg_replace( '#^https?://doi.org/#', '', $id );
 		$this->id = $id;
 	}
 
