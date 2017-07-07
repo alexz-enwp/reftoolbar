@@ -86,6 +86,9 @@ class PMIDLookup {
 				case 'Pages':
 					$result['pages'] = (string)$i;
 					break;
+				case 'DOI':
+					$result['doi'] = (string)$i;
+					break;
 				case 'AuthorList':
 					foreach($i->Item as $a) {
 						$r = preg_match('/^(.*?) (\S*)$/', (string)$a, $match);
