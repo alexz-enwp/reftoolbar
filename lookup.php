@@ -270,6 +270,7 @@ class CitoidLookup {
 						// Citoid API returns 'X edition', but templates expect just 'X'
 						$result['edition'] = str_replace(' edition','',$value);
 						$result['edition'] = str_replace(' ed.','',$value);
+						$result['edition'] = str_replace(' ed','',$value);
 						break;
 					case 'publisher':
 						$result['publisher'] = $value;
@@ -294,9 +295,17 @@ class CitoidLookup {
 						break;
 					case 'author':
 						foreach( $value as $author ) {
-							if ( $author[0] && $author[1] ) {
+							// Make sure first name doesn't start with a number or include a comma
+							if ( preg_match( '/^\d/', $author[0] ) !== 1 && strpos( $author[0], ',' ) === false ) {
+								$firstName = $author[0];
+							}
+							// Make sure last name doesn't start with a number or include a comma
+							if ( preg_match( '/^\d/', $author[1] ) !== 1 && strpos( $author[1], ',' ) === false ) {
+								$lastName = $author[1];
+							}
+							if ( $firstName && $lastName ) {
 								// RefToolbar gadget expects lastName, firstName
-								$result['authors'][] = array($author[1], $author[0]);
+								$result['authors'][] = array($lastName, $firstName);
 							}
 						}
 				}
