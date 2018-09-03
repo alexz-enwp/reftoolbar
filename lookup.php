@@ -105,6 +105,8 @@ class PMIDLookup {
 	}
 }
 
+// TODO: API seems to be broken as of September 2018. Test again in a few weeks and remove
+// this class if it's still broken. Using CitoidLookup in the meantime.
 class ISBNLookup {
 
 	private $id;
@@ -214,7 +216,7 @@ class DOILookup {
 	}
 }
 
-class URLLookup {
+class CitoidLookup {
 
 	private $id;
 
@@ -314,13 +316,13 @@ switch($k[0]) {
 		$class = 'PMIDLookup';
 		break;
 	case 'isbn':
-		$class = 'ISBNLookup';
+		$class = 'CitoidLookup';
 		break;
 	case 'doi':
 		$class = 'DOILookup';
 		break;
 	case 'url':
-		$class = 'URLLookup';
+		$class = 'CitoidLookup';
 		break;
 	default:
 		die(1);
