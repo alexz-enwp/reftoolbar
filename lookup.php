@@ -186,6 +186,9 @@ class CitoidLookup {
 						break;
 					case 'author':
 						foreach( $value as $author ) {
+							// Prevent undefined errors
+							$firstName = null;
+							$lastName = null;
 							// Make sure first name doesn't start with a number or include a comma
 							if ( preg_match( '/^\d/', $author[0] ) !== 1 && strpos( $author[0], ',' ) === false ) {
 								$firstName = $author[0];
