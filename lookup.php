@@ -23,6 +23,7 @@
 */
 
 header('Content-type: text/javascript');
+
 class PMIDLookup {
 
 	private $id;
@@ -99,117 +100,6 @@ class PMIDLookup {
 						}
 					}
 					break;
-			}
-		}
-		return $result;
-	}
-}
-
-// TODO: API seems to be broken as of September 2018. Test again in a few weeks and remove
-// this class if it's still broken. Using CitoidLookup in the meantime.
-class ISBNLookup {
-
-	private $id;
-
-	public function __construct( $id ) {
-		$this->id = $id;
-	}
-
-	public function getResult() {
-		$url = "http://xisbn.worldcat.org/webservices/xid/isbn/{$this->id}?method=getMetadata&format=json&fl=year,ed,title,author,publisher,city";
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		$json = curl_exec($ch);
-		curl_close($ch);
-		$data = json_decode($json, true);
-		$result = array();
-		if ($data['stat'] == 'ok') {
-			$result['title'] = $data['list'][0]['title'];
-			$result['publisher'] = $data['list'][0]['publisher'];
-			$result['location'] = $data['list'][0]['city'];
-			$result['year'] = $data['list'][0]['year'];
-			$result['edition'] = $data['list'][0]['ed'];
-			$authors = $data['list'][0]['author'];
-			$authors = rtrim($authors, '.');
-			if (strpos($authors, 'by ') === 0) {
-				$authors = substr($authors, 3);
-			}
-			$result['authors'] = array();
-			$a = explode(' and ', $authors);
-			$alist = array();
-			if (count($a) == 2) {
-				$alist = explode(', ', $a[0]);
-				$alist[] = $a[1];
-			} else {
-				$alist[] = $authors;
-			}
-			foreach($alist as $a) {
-				$r = preg_match('/^(.*?) (\S*)$/', $a, $match);
-				if ($r) {
-					$result['authors'][] = array( $match[2], $match[1] );
-				} else {
-					$result['authors'][] = array( $a, '');
-				}
-			}
-		}
-		return $result;
-	}
-
-}
-
-class DOILookup {
-
-	private $id;
-
-	public function __construct( $id ) {
-		// Strip URL prefix if given
-		$id = preg_replace( '#^https?://doi.org/#', '', $id );
-		$this->id = $id;
-	}
-
-	public function getResult() {
-		require_once('crossref.php'); // username for crossref openurl system
-		$url = "http://www.crossref.org/openurl/?id={$this->id}&noredirect=true&pid=$crPID&format=unixref";
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		$xml = curl_exec($ch);
-		curl_close($ch);
-		$data = simplexml_load_string($xml);
-		$result = array();
-		if (!$data->doi_record->crossref->error) {
-			$res = $data->doi_record->crossref->journal;
-
-			$result['title'] = (string)$res->journal_article->titles->title[0];
-			$result['journal'] = (string)$res->journal_metadata->full_title;
-			$result['volume'] = (string)$res->journal_issue->journal_volume->volume;
-			$result['issue'] = (string)$res->journal_issue->issue;
-			if ($res->journal_article->pages) {
-				$result['pages'] = (string)$res->journal_article->pages->first_page;
-				$res->journal_article->pages->last_page ? $result['pages'].='–'.$res->journal_article->pages->last_page : 0;
-			}
-			$result['fulldate'] = true;
-			if (!$res->journal_article->publication_date->day) {
-				$result['fulldate'] = false;
-				$result['year'] = (string)$res->journal_article->publication_date->year;
-				if ($res->journal_article->publication_date->month) {
-					$result['month'] = (string)$res->journal_article->publication_date->month;
-				} else {
-					$result['month'] = false;
-				}
-			}
-			$result['date'] = (string)$res->journal_article->publication_date->year;
-			if ($res->journal_article->publication_date->month) {
-				(string)$result['date'].='-'.str_pad( $res->journal_article->publication_date->month, 2, "0", STR_PAD_LEFT);
-				if ( $res->journal_article->publication_date->day ) {
-					(string)$result['date'].='-'.str_pad($res->journal_article->publication_date->day, 2, "0", STR_PAD_LEFT);
-				}
-			}
-			$result['authors'] = array();
-
-			foreach($res->journal_article->contributors->person_name as $a) {
-				$result['authors'][] = array((string)$a->surname, (string)$a->given_name);
 			}
 		}
 		return $result;
@@ -329,8 +219,6 @@ switch($k[0]) {
 		$class = 'CitoidLookup';
 		break;
 	case 'doi':
-		// we use CitoidLookup for DOIs
-		// in order to have the same behavior between the Visual Editor (only based on Citoid) and the Source Editor
 		$class = 'CitoidLookup';
 		break;
 	case 'url':
