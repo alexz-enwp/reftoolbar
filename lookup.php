@@ -329,7 +329,9 @@ switch($k[0]) {
 		$class = 'CitoidLookup';
 		break;
 	case 'doi':
-		$class = 'DOILookup';
+		// we use CitoidLookup for DOIs
+		// in order to have the same behavior between the Visual Editor (only based on Citoid) and the Source Editor
+		$class = 'CitoidLookup';
 		break;
 	case 'url':
 		$class = 'CitoidLookup';
