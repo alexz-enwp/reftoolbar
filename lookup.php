@@ -268,9 +268,10 @@ class CitoidLookup {
 						break;
 					case 'edition':
 						// Citoid API returns 'X edition', but templates expect just 'X'
-						$result['edition'] = str_replace(' edition','',$value);
-						$result['edition'] = str_replace(' ed.','',$value);
-						$result['edition'] = str_replace(' ed','',$value);
+						$value = str_replace(' edition','',$value);
+						$value = str_replace(' ed.','',$value);
+						$value = str_replace(' ed','',$value);
+						$result['edition'] = $value;
 						break;
 					case 'publisher':
 						$result['publisher'] = $value;
