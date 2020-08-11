@@ -184,6 +184,9 @@ class CitoidLookup {
 					case 'language':
 						$result['language'] = $value;
 						break;
+					case 'place':
+						$result['location'] = $value;
+						break;
 					case 'author':
 						foreach( $value as $author ) {
 							// Prevent undefined errors
