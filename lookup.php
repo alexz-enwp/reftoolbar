@@ -67,7 +67,10 @@ class PMIDLookup {
 						}
 						$result['date'] = $date[0];
 						if (isset($date[1])) {
-							$result['date'].='-'.$months[$date[1]];
+							// If the date covers multiple months (e.g. Jul-Aug), just take the first one
+							$monthPieces = explode('-', $date[1]);
+							$month = $monthPieces[0];
+							$result['date'].='-'.$months[$month];
 							if (isset($date[2])) {
 								$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
 							}
