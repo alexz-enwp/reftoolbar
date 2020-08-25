@@ -50,7 +50,7 @@ class PMIDLookup {
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
 		$result = array();
-		if ($data && property_exists($data, DocSum) && property_exists($data->DocSum, Item)) {
+		if ($data && property_exists($data, 'DocSum') && property_exists($data->DocSum, 'Item')) {
 			foreach($data->DocSum->Item as $i) {
 				switch ($i['Name']) {
 					case 'PubDate':
