@@ -50,56 +50,58 @@ class PMIDLookup {
 		curl_close($ch);
 		$data = simplexml_load_string($xml);
 		$result = array();
-		foreach($data->DocSum->Item as $i) {
-			switch ($i['Name']) {
-				case 'PubDate':
-					$result['fulldate'] = true;
-					$date = explode (" ", (string)$i);
-					if (!isset($date[2])) {
-						$result['fulldate'] = false;
-						$result['year'] = $date[0];
+		if ($data && property_exists($data, DocSum) && property_exists($data->DocSum, Item)) {
+			foreach($data->DocSum->Item as $i) {
+				switch ($i['Name']) {
+					case 'PubDate':
+						$result['fulldate'] = true;
+						$date = explode (" ", (string)$i);
+						if (!isset($date[2])) {
+							$result['fulldate'] = false;
+							$result['year'] = $date[0];
+							if (isset($date[1])) {
+								$result['month'] = $months[$date[1]];
+							} else {
+								$result['month'] = false;
+							}
+						}
+						$result['date'] = $date[0];
 						if (isset($date[1])) {
-							$result['month'] = $months[$date[1]];
-						} else {
-							$result['month'] = false;
+							$result['date'].='-'.$months[$date[1]];
+							if (isset($date[2])) {
+								$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
+							}
 						}
-					}
-					$result['date'] = $date[0];
-					if (isset($date[1])) {
-						$result['date'].='-'.$months[$date[1]];
-						if (isset($date[2])) {
-							$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
+						break;
+					case 'FullJournalName':
+						$result['journal'] = (string)$i;
+						break;
+					case 'Title':
+						$result['title'] = (string)$i;
+						break;
+					case 'Volume':
+						$result['volume'] = (string)$i;
+						break;
+					case 'Issue':
+						$result['issue'] = (string)$i;
+						break;
+					case 'Pages':
+						$result['pages'] = (string)$i;
+						break;
+					case 'DOI':
+						$result['doi'] = (string)$i;
+						break;
+					case 'AuthorList':
+						foreach($i->Item as $a) {
+							$r = preg_match('/^(.*?) (\S*)$/', (string)$a, $match);
+							if ($r) {
+								$result['authors'][] = array( $match[1], $match[2] );
+							} else {
+								$result['authors'][] = array( (string)$a, '' );
+							}
 						}
-					}
-					break;
-				case 'FullJournalName':
-					$result['journal'] = (string)$i;
-					break;
-				case 'Title':
-					$result['title'] = (string)$i;
-					break;
-				case 'Volume':
-					$result['volume'] = (string)$i;
-					break;
-				case 'Issue':
-					$result['issue'] = (string)$i;
-					break;
-				case 'Pages':
-					$result['pages'] = (string)$i;
-					break;
-				case 'DOI':
-					$result['doi'] = (string)$i;
-					break;
-				case 'AuthorList':
-					foreach($i->Item as $a) {
-						$r = preg_match('/^(.*?) (\S*)$/', (string)$a, $match);
-						if ($r) {
-							$result['authors'][] = array( $match[1], $match[2] );
-						} else {
-							$result['authors'][] = array( (string)$a, '' );
-						}
-					}
-					break;
+						break;
+				}
 			}
 		}
 		return $result;
