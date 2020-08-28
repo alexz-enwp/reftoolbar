@@ -32,6 +32,20 @@ class PMIDLookup {
 		$this->id = $id;
 	}
 
+	private function normalizeMonth( $monthString ) {
+		$months = array('Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
+			'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
+			'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
+		// If the date covers multiple months (e.g. Jul-Aug), just take the first one
+		$monthPieces = explode('-', $monthString);
+		$month = $monthPieces[0];
+		if ( array_key_exists( $month, $months) ) {
+			return $months[$month];
+		} else {
+			return false;
+		}
+	}
+
 	public function getResult() {
 		$url = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?';
 		$url .= "&db=pubmed";
@@ -40,14 +54,12 @@ class PMIDLookup {
 		$url .= "&id={$this->id}";
 		$url .= '&retmode=xml';
 
-		$months = array('Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
-				'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
-				'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		$xml = curl_exec($ch);
 		curl_close($ch);
+		libxml_use_internal_errors(true); // Suppress errors from invalid XML
 		$data = simplexml_load_string($xml);
 		$result = array();
 		if ($data && property_exists($data, 'DocSum') && property_exists($data->DocSum, 'Item')) {
@@ -60,19 +72,19 @@ class PMIDLookup {
 							$result['fulldate'] = false;
 							$result['year'] = $date[0];
 							if (isset($date[1])) {
-								$result['month'] = $months[$date[1]];
+								$result['month'] = $this->normalizeMonth($date[1]);
 							} else {
 								$result['month'] = false;
 							}
 						}
 						$result['date'] = $date[0];
 						if (isset($date[1])) {
-							// If the date covers multiple months (e.g. Jul-Aug), just take the first one
-							$monthPieces = explode('-', $date[1]);
-							$month = $monthPieces[0];
-							$result['date'].='-'.$months[$month];
-							if (isset($date[2])) {
-								$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
+							$month = $this->normalizeMonth($date[1]);
+							if ($month) {
+								$result['date'].='-'.$month;
+								if (isset($date[2])) {
+									$result['date'].='-'.str_pad($date[2], 2, "0", STR_PAD_LEFT);
+								}
 							}
 						}
 						break;
