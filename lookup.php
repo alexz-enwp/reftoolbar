@@ -132,8 +132,12 @@ class CitoidLookup {
 	}
 
 	public function getResult() {
+		// Sanity check the ID (make sure it has been URL encoded)
+		if ( strpos( $this->id, ':' ) !== false || strpos( $this->id, '/' ) !== false ) {
+			$this->id = urlencode( $this->id );
+		}
 		// See https://www.mediawiki.org/wiki/Citoid
-		$url = "https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki-basefields/" . urlencode( $this->id );
+		$url = "https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki-basefields/" . $this->id;
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
