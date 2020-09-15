@@ -131,6 +131,40 @@ class CitoidLookup {
 		$this->id = $id;
 	}
 
+	/**
+	 * Extract first and last names from a WorldCat author string
+	 * @param string $nameString
+	 * @return array
+	 */
+	private function extractNames( $nameString ) {
+		$names = [ '', '' ];
+		// Remove content in parentheses
+		$pattern = '/ \(.*\)/';
+		$nameString = preg_replace( $pattern, '', $nameString );
+		// Remove content in unclosed parentheses
+		$pattern = '/ \(.*/';
+		$nameString = preg_replace( $pattern, '', $nameString );
+		// Remove years
+		$pattern = '/ [\d\-\.,]+/';
+		$nameString = preg_replace( $pattern, '', $nameString );
+		// Remove trailing commas
+		$pattern = '/,$/';
+		$nameString = preg_replace( $pattern, '', $nameString );
+		if ( !preg_match( '/ Jr\.$/', $nameString ) && !preg_match( '/ Sr\.$/', $nameString ) ) {
+			// Remove trailing periods preceded by 2 or more letters
+			$pattern = '/(\w{2,})\.$/';
+			$nameString = preg_replace( $pattern, '$1', $nameString );
+		}
+		// Find first name and last name
+		$pattern = '/([^,]+), (.+)/';
+		$namesFound = preg_match( $pattern, $nameString, $matches );
+		if ( $namesFound ) {
+			$names[0] = $matches[2]; // first name
+			$names[1] = $matches[1]; // last name
+		}
+		return $names;
+	}
+
 	public function getResult() {
 		// Sanity check the ID (make sure it has been URL encoded)
 		if ( strpos( $this->id, ':' ) !== false || strpos( $this->id, '/' ) !== false ) {
@@ -213,12 +247,19 @@ class CitoidLookup {
 							// Prevent undefined errors
 							$firstName = null;
 							$lastName = null;
-							// Make sure first name doesn't start with a number or include a comma
-							if ( preg_match( '/^\d/', $author[0] ) !== 1 && strpos( $author[0], ',' ) === false ) {
+							// If Citoid is using the WorldCat API, the first name will be blank and the
+							// last name will be a full author citation string, often with other
+							// information such as birth and death years and extraneous punctuation.
+							// See https://phabricator.wikimedia.org/T160845.
+							if ( $author[0] === '' &&  strpos( $author[1], ',' ) && $data[0]['source'][0] === 'WorldCat' ) {
+								$author = $this->extractNames( $author[1] );
+							}
+							// Make sure first name doesn't start with a number
+							if ( preg_match( '/^\d/', $author[0] ) !== 1 ) {
 								$firstName = $author[0];
 							}
-							// Make sure last name doesn't start with a number or include a comma
-							if ( preg_match( '/^\d/', $author[1] ) !== 1 && strpos( $author[1], ',' ) === false ) {
+							// Make sure last name doesn't start with a number
+							if ( preg_match( '/^\d/', $author[1] ) !== 1 ) {
 								$lastName = $author[1];
 							}
 							if ( $firstName && $lastName ) {
