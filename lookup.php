@@ -139,10 +139,7 @@ class CitoidLookup {
 	private function extractNames( $nameString ) {
 		$names = [ '', '' ];
 		// Remove content in parentheses
-		$pattern = '/ \(.*\)/';
-		$nameString = preg_replace( $pattern, '', $nameString );
-		// Remove content in unclosed parentheses
-		$pattern = '/ \(.*/';
+		$pattern = '/ \([^\)]*\)/';
 		$nameString = preg_replace( $pattern, '', $nameString );
 		// Remove years
 		$pattern = '/ [\d\-\.,]+/';
@@ -150,6 +147,7 @@ class CitoidLookup {
 		// Remove trailing commas
 		$pattern = '/,$/';
 		$nameString = preg_replace( $pattern, '', $nameString );
+		// Remove trailing periods except when they are for abbreviations such as Jr., Sr., or A.
 		if ( !preg_match( '/ Jr\.$/', $nameString ) && !preg_match( '/ Sr\.$/', $nameString ) ) {
 			// Remove trailing periods preceded by 2 or more letters
 			$pattern = '/(\w{2,})\.$/';
