@@ -274,7 +274,7 @@ class CitoidLookup {
 }
 
 $k = array_keys($_GET);
-if (!isset( $k[0])) {
+if (!isset($k[0])) {
 	die(1);
 }
 switch($k[0]) {
@@ -308,5 +308,7 @@ if (file_exists( '/data/project/reftoolbar/log.txt')) {
 	file_put_contents('/data/project/reftoolbar/log.txt', $log);
 }
 $res = $look->getResult();
-$tem = $_GET['template'];
-echo 'CiteTB.autoFill('.json_encode($res).", '$tem', '{$k[0]}')";
+if (isset($_GET['template'])) {
+	$template = $_GET['template'];
+	echo 'CiteTB.autoFill('.json_encode($res).", '$template', '{$k[0]}')";
+}
